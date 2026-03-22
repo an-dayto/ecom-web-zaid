@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% load store_tags %}
+
+{% block title %}Shopping Cart{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+        <h1 class="page-title">Shopping Cart</h1>
+
+        {% if cart_items %}
+        <div class="cart-layout">
+            <div class="cart-items">
+                <table class="cart-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Price</th>
+                            <th>Quantity</th>
+                            <th>Total</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in cart_items %}
+                        <tr>
+                            <td class="cart-product">
+                                <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" onerror="this.src='https://placehold.co/80x80/eee/999?text=No+Image'">
+                                <div>
+                                    <h4><a href="{% url 'store:product_detail' item.product.slug %}">{{ item.product.name }}</a></h4>
+                                    <span class="product-category">{{ item.product.category.name }}</span>
+                                </div>
+                            </td>
+                            <td>${{ item.price }}</td>
+                            <td>
+                                <form method="post" action="{% url 'store:cart_update' %}" class="qty-form">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="product_id" value="{{ item.product.id }}">
+                                    <div class="quantity-input quantity-input-sm">
+                                        <button type="submit" name="quantity" value="{{ item.quantity|add:'-1' }}">-</button>
+                                        <span>{{ item.quantity }}</span>
+                                        <button type="submit" name="quantity" value="{{ item.quantity|add:'1' }}">+</button>
+                                    </div>
+                                </form>
+                            </td>
+                            <td class="cart-item-total">${{ item.total }}</td>
+                            <td>
+                                <form method="post" action="{% url 'store:cart_remove' item.product.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="remove-btn" title="Remove">&times;</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="cart-summary">
+                <h3>Order Summary</h3>
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <span>${{ cart.subtotal }}</span>
+                </div>
+
+                {% if discount_code %}
+                <div class="summary-row discount-row">
+                    <span>Discount ({{ discount_code }})</span>
+                    <span>-${{ discount_amount }}</span>
+                </div>
+                {% endif %}
+
+                <div class="summary-row">
+                    <span>Shipping</span>
+                    <span>{% if cart.subtotal >= 50 %}Free{% else %}$5.99{% endif %}</span>
+                </div>
+
+                <hr>
+                <div class="summary-row summary-total">
+                    <span>Total</span>
+                    <span>${{ total }}</span>
+                </div>
+
+                <!-- Discount Code -->
+                <form method="post" action="{% url 'store:apply_discount' %}" class="discount-form">
+                    {% csrf_token %}
+                    <div class="discount-input">
+                        <input type="text" name="code" placeholder="Discount code" value="{{ discount_code|default:'' }}">
+                        <button type="submit" class="btn btn-outline btn-sm">Apply</button>
+                    </div>
+                </form>
+
+                <a href="{% url 'store:checkout' %}" class="btn btn-primary btn-block btn-lg">Proceed to Checkout</a>
+                <a href="{% url 'store:product_list' %}" class="btn btn-outline btn-block">Continue Shopping</a>
+            </div>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">&#128722;</div>
+            <h2>Your cart is empty</h2>
+            <p>Looks like you haven't added any products yet.</p>
+            <a href="{% url 'store:product_list' %}" class="btn btn-primary btn-lg">Start Shopping</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

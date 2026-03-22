@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}{% if current_category %}{{ current_category.name }}{% else %}Shop{% endif %}{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+        <div class="page-header">
+            <h1>{% if current_category %}{{ current_category.name }}{% elif search %}Search: "{{ search }}"{% else %}All Products{% endif %}</h1>
+            {% if current_category and current_category.description %}
+            <p>{{ current_category.description }}</p>
+            {% endif %}
+        </div>
+
+        <div class="shop-layout">
+            <!-- Sidebar -->
+            <aside class="shop-sidebar">
+                <div class="sidebar-section">
+                    <h3>Categories</h3>
+                    <ul class="category-list">
+                        <li><a href="{% url 'store:product_list' %}" class="{% if not current_category %}active{% endif %}">All Products</a></li>
+                        {% for cat in categories %}
+                        <li>
+                            <a href="{% url 'store:product_list_by_category' cat.slug %}" class="{% if current_category.slug == cat.slug %}active{% endif %}">
+                                {{ cat.name }} <span>({{ cat.products.count }})</span>
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </aside>
+
+            <!-- Products -->
+            <div class="shop-content">
+                <div class="shop-toolbar">
+                    <span class="product-count">{{ products|length }} product{{ products|length|pluralize }}</span>
+                    <div class="sort-select">
+                        <label>Sort by:</label>
+                        <select onchange="window.location.href=this.value">
+                            <option value="?sort=" {% if not sort %}selected{% endif %}>Newest</option>
+                            <option value="?sort=price_asc{% if current_category %}&category={{ current_category.slug }}{% endif %}" {% if sort == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+                            <option value="?sort=price_desc{% if current_category %}&category={{ current_category.slug }}{% endif %}" {% if sort == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+                            <option value="?sort=name{% if current_category %}&category={{ current_category.slug }}{% endif %}" {% if sort == 'name' %}selected{% endif %}>Name</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="products-grid">
+                    {% for product in products %}
+                    <div class="product-card">
+                        {% if product.discount_percent %}
+                        <span class="product-badge">-{{ product.discount_percent }}%</span>
+                        {% endif %}
+                        <a href="{% url 'store:product_detail' product.slug %}">
+                            <img src="{{ product.image_url }}" alt="{{ product.name }}" onerror="this.src='https://placehold.co/400x400/eee/999?text={{ product.name }}'">
+                        </a>
+                        <div class="product-card-body">
+                            <span class="product-category">{{ product.category.name }}</span>
+                            <h3><a href="{% url 'store:product_detail' product.slug %}">{{ product.name }}</a></h3>
+                            <div class="product-price">
+                                <span class="price">${{ product.price }}</span>
+                                {% if product.compare_at_price %}
+                                <span class="compare-price">${{ product.compare_at_price }}</span>
+                                {% endif %}
+                            </div>
+                            <form method="post" action="{% url 'store:cart_add' product.id %}" class="add-to-cart-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="quantity" value="1">
+                                <button type="submit" class="btn btn-primary btn-sm btn-block">Add to Cart</button>
+                            </form>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="empty-state">
+                        <h3>No products found</h3>
+                        <p>Try adjusting your search or browse our categories.</p>
+                        <a href="{% url 'store:product_list' %}" class="btn btn-primary">View All Products</a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

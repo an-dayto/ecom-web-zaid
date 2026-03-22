@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% load store_tags %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="{% url 'store:home' %}">Home</a> &rsaquo;
+            <a href="{% url 'store:product_list' %}">Shop</a> &rsaquo;
+            <a href="{% url 'store:product_list_by_category' product.category.slug %}">{{ product.category.name }}</a> &rsaquo;
+            <span>{{ product.name }}</span>
+        </div>
+
+        <div class="product-detail">
+            <div class="product-detail-image">
+                {% if product.discount_percent %}
+                <span class="product-badge product-badge-lg">-{{ product.discount_percent }}%</span>
+                {% endif %}
+                <img src="{{ product.image_url }}" alt="{{ product.name }}" onerror="this.src='https://placehold.co/600x600/eee/999?text={{ product.name }}'">
+            </div>
+            <div class="product-detail-info">
+                <span class="product-category">{{ product.category.name }}</span>
+                <h1>{{ product.name }}</h1>
+                <div class="product-price product-price-lg">
+                    <span class="price">${{ product.price }}</span>
+                    {% if product.compare_at_price %}
+                    <span class="compare-price">${{ product.compare_at_price }}</span>
+                    <span class="save-badge">Save ${{ product.compare_at_price|add:product.price|default:"" }}{% widthratio product.compare_at_price 1 1 as cap %}{% widthratio product.price 1 1 as pp %}</span>
+                    {% endif %}
+                </div>
+
+                <div class="product-description">
+                    <p>{{ product.description }}</p>
+                </div>
+
+                <div class="product-meta">
+                    <div class="stock-info {% if product.stock > 0 %}in-stock{% else %}out-of-stock{% endif %}">
+                        {% if product.stock > 0 %}
+                            &#10003; In Stock ({{ product.stock }} available)
+                        {% else %}
+                            &#10007; Out of Stock
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if product.stock > 0 %}
+                <form method="post" action="{% url 'store:cart_add' product.id %}" class="add-to-cart-form product-add-form">
+                    {% csrf_token %}
+                    <div class="quantity-selector">
+                        <label>Quantity:</label>
+                        <div class="quantity-input">
+                            <button type="button" onclick="changeQty(-1)">-</button>
+                            <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" id="qty-input">
+                            <button type="button" onclick="changeQty(1)">+</button>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg btn-block">Add to Cart</button>
+                </form>
+                {% endif %}
+
+                <div class="product-features">
+                    <div class="product-feature"><span>&#128666;</span> Free shipping over $50</div>
+                    <div class="product-feature"><span>&#128260;</span> 30-day returns</div>
+                    <div class="product-feature"><span>&#128274;</span> Secure checkout</div>
+                </div>
+            </div>
+        </div>
+
+        {% if related_products %}
+        <div class="related-products">
+            <h2>You May Also Like</h2>
+            <div class="products-grid">
+                {% for product in related_products %}
+                <div class="product-card">
+                    {% if product.discount_percent %}
+                    <span class="product-badge">-{{ product.discount_percent }}%</span>
+                    {% endif %}
+                    <a href="{% url 'store:product_detail' product.slug %}">
+                        <img src="{{ product.image_url }}" alt="{{ product.name }}" onerror="this.src='https://placehold.co/400x400/eee/999?text={{ product.name }}'">
+                    </a>
+                    <div class="product-card-body">
+                        <span class="product-category">{{ product.category.name }}</span>
+                        <h3><a href="{% url 'store:product_detail' product.slug %}">{{ product.name }}</a></h3>
+                        <div class="product-price">
+                            <span class="price">${{ product.price }}</span>
+                            {% if product.compare_at_price %}
+                            <span class="compare-price">${{ product.compare_at_price }}</span>
+                            {% endif %}
+                        </div>
+                        <form method="post" action="{% url 'store:cart_add' product.id %}" class="add-to-cart-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="quantity" value="1">
+                            <button type="submit" class="btn btn-primary btn-sm btn-block">Add to Cart</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function changeQty(delta) {
+    const input = document.getElementById('qty-input');
+    let val = parseInt(input.value) + delta;
+    if (val < 1) val = 1;
+    if (val > parseInt(input.max)) val = parseInt(input.max);
+    input.value = val;
+}
+</script>
+{% endblock %}

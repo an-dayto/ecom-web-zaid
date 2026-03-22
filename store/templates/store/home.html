@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-content">
+            <span class="hero-badge">New Collection 2026</span>
+            <h1>Discover Products That <span class="text-accent">Define Your Style</span></h1>
+            <p>Shop the latest trends with up to 40% off on selected items. Free shipping on orders over $50.</p>
+            <div class="hero-actions">
+                <a href="{% url 'store:product_list' %}" class="btn btn-primary btn-lg">Shop Now</a>
+                <a href="#categories" class="btn btn-outline btn-lg">Browse Categories</a>
+            </div>
+            <div class="hero-stats">
+                <div><strong>2K+</strong><span>Products</span></div>
+                <div><strong>50K+</strong><span>Customers</span></div>
+                <div><strong>4.8</strong><span>Rating</span></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Categories -->
+<section class="section" id="categories">
+    <div class="container">
+        <div class="section-header">
+            <h2>Shop by Category</h2>
+            <p>Find exactly what you're looking for</p>
+        </div>
+        <div class="categories-grid">
+            {% for category in categories %}
+            <a href="{% url 'store:product_list_by_category' category.slug %}" class="category-card">
+                <img src="{{ category.image_url }}" alt="{{ category.name }}" onerror="this.src='https://placehold.co/400x300/eee/999?text={{ category.name }}'">
+                <div class="category-card-overlay">
+                    <h3>{{ category.name }}</h3>
+                    <span>{{ category.products.count }} products</span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Featured Products -->
+<section class="section section-gray">
+    <div class="container">
+        <div class="section-header">
+            <h2>Featured Products</h2>
+            <p>Handpicked just for you</p>
+        </div>
+        <div class="products-grid">
+            {% for product in featured_products %}
+            <div class="product-card">
+                {% if product.discount_percent %}
+                <span class="product-badge">-{{ product.discount_percent }}%</span>
+                {% endif %}
+                <a href="{% url 'store:product_detail' product.slug %}">
+                    <img src="{{ product.image_url }}" alt="{{ product.name }}" onerror="this.src='https://placehold.co/400x400/eee/999?text={{ product.name }}'">
+                </a>
+                <div class="product-card-body">
+                    <span class="product-category">{{ product.category.name }}</span>
+                    <h3><a href="{% url 'store:product_detail' product.slug %}">{{ product.name }}</a></h3>
+                    <div class="product-price">
+                        <span class="price">${{ product.price }}</span>
+                        {% if product.compare_at_price %}
+                        <span class="compare-price">${{ product.compare_at_price }}</span>
+                        {% endif %}
+                    </div>
+                    <form method="post" action="{% url 'store:cart_add' product.id %}" class="add-to-cart-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="quantity" value="1">
+                        <button type="submit" class="btn btn-primary btn-sm btn-block">Add to Cart</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Promo Banner -->
+<section class="promo-banner">
+    <div class="container">
+        <div class="promo-content">
+            <span class="promo-badge">Limited Time</span>
+            <h2>Get 10% Off Your First Order</h2>
+            <p>Use code <strong>WELCOME10</strong> at checkout</p>
+            <a href="{% url 'store:product_list' %}" class="btn btn-white btn-lg">Start Shopping</a>
+        </div>
+    </div>
+</section>
+
+<!-- Latest Products -->
+<section class="section">
+    <div class="container">
+        <div class="section-header">
+            <h2>New Arrivals</h2>
+            <a href="{% url 'store:product_list' %}" class="btn btn-outline">View All</a>
+        </div>
+        <div class="products-grid">
+            {% for product in latest_products %}
+            <div class="product-card">
+                {% if product.discount_percent %}
+                <span class="product-badge">-{{ product.discount_percent }}%</span>
+                {% endif %}
+                <a href="{% url 'store:product_detail' product.slug %}">
+                    <img src="{{ product.image_url }}" alt="{{ product.name }}" onerror="this.src='https://placehold.co/400x400/eee/999?text={{ product.name }}'">
+                </a>
+                <div class="product-card-body">
+                    <span class="product-category">{{ product.category.name }}</span>
+                    <h3><a href="{% url 'store:product_detail' product.slug %}">{{ product.name }}</a></h3>
+                    <div class="product-price">
+                        <span class="price">${{ product.price }}</span>
+                        {% if product.compare_at_price %}
+                        <span class="compare-price">${{ product.compare_at_price }}</span>
+                        {% endif %}
+                    </div>
+                    <form method="post" action="{% url 'store:cart_add' product.id %}" class="add-to-cart-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="quantity" value="1">
+                        <button type="submit" class="btn btn-primary btn-sm btn-block">Add to Cart</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Features -->
+<section class="section section-gray">
+    <div class="container">
+        <div class="features-grid">
+            <div class="feature">
+                <div class="feature-icon">&#128666;</div>
+                <h3>Free Shipping</h3>
+                <p>On orders over $50</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">&#128260;</div>
+                <h3>Easy Returns</h3>
+                <p>30-day return policy</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">&#128274;</div>
+                <h3>Secure Payment</h3>
+                <p>100% secure checkout</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">&#128222;</div>
+                <h3>24/7 Support</h3>
+                <p>Dedicated support team</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

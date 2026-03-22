@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Order Confirmed{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+        <div class="confirmation-page">
+            <div class="confirmation-icon">&#10003;</div>
+            <h1>Order Confirmed!</h1>
+            <p class="confirmation-subtitle">Thank you for your purchase, {{ order.first_name }}!</p>
+
+            <div class="order-details-card">
+                <div class="order-header">
+                    <div>
+                        <h3>Order #{{ order.id }}</h3>
+                        <p>Placed on {{ order.created|date:"F j, Y" }}</p>
+                    </div>
+                    <span class="status-badge status-{{ order.status }}">{{ order.get_status_display }}</span>
+                </div>
+
+                <div class="order-items-list">
+                    {% for item in order.items.all %}
+                    <div class="order-item-row">
+                        <span>{{ item.product.name }} &times; {{ item.quantity }}</span>
+                        <span>${{ item.total }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <hr>
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <span>${{ order.subtotal }}</span>
+                </div>
+                {% if order.discount_amount %}
+                <div class="summary-row discount-row">
+                    <span>Discount</span>
+                    <span>-${{ order.discount_amount }}</span>
+                </div>
+                {% endif %}
+                <div class="summary-row summary-total">
+                    <span>Total</span>
+                    <span>${{ order.total }}</span>
+                </div>
+
+                <hr>
+                <div class="shipping-details">
+                    <h4>Shipping To:</h4>
+                    <p>{{ order.first_name }} {{ order.last_name }}</p>
+                    <p>{{ order.address }}</p>
+                    <p>{{ order.city }}, {{ order.state }} {{ order.zip_code }}</p>
+                    <p>{{ order.email }}</p>
+                </div>
+            </div>
+
+            <div class="confirmation-actions">
+                <a href="{% url 'store:product_list' %}" class="btn btn-primary btn-lg">Continue Shopping</a>
+                <a href="{% url 'store:home' %}" class="btn btn-outline btn-lg">Back to Home</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
